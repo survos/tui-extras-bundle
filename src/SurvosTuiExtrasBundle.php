@@ -10,10 +10,12 @@ use Symfony\Component\DependencyInjection\Kernel\RequiredBundle;
 /**
  * Extra TUI widgets and data-source abstractions for symfony/tui.
  *
- * survos/field-bundle is an optional enhancement: when present, TuiColumn::fromFieldDescriptor()
- * bridges FieldDescriptor (including future YAML-defined columns) to TUI column metadata.
- * The #[RequiredBundle] below ensures field-bundle is initialized before this bundle
- * in any app that has it installed, without failing when it is absent.
+ * The primary entry point for browse commands is vendor/bin/browse — a standalone
+ * script that runs its own lightweight kernel. Commands are NOT auto-registered in
+ * the host application's bin/console by default.
+ *
+ * survos/field-bundle is an optional enhancement: when present,
+ * TuiColumn::fromFieldDescriptor() bridges FieldDescriptor to TUI column metadata.
  */
 #[RequiredBundle('Survos\FieldBundle\SurvosFieldBundle', ignoreOnInvalid: true)]
 class SurvosTuiExtrasBundle extends AbstractBundle

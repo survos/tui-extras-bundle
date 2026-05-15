@@ -1,0 +1,89 @@
+#!/usr/bin/env php
+<?php
+
+/**
+ * vendor/bin/browse — standalone TUI browser for Symfony projects.
+ *
+ * After `composer require survos/tui-extras-bundle`, run:
+ *
+ *   vendor/bin/browse               # file tree of current directory
+ *   vendor/bin/browse files [dir]   # file browser
+ *   vendor/bin/browse commands      # console command browser
+ *
+ * This script boots its own lightweight kernel (AbstractKernel + ConsoleBundle).
+ * It does NOT register commands in the host application's bin/console.
+ * The host app's bin/console is only used as a data source for `browse commands`.
+ */
+
+// ── Locate the host project's vendor/autoload.php ────────────────────────────
+//
+// When installed via composer, this file lives at:
+//   vendor/survos/tui-extras-bundle/bin/browse   (real path)
+//   vendor/bin/browse                             (symlink)
+//
+// From the real path: dirname x4 = vendor/, dirname x5 = project root.
+// Fallback to getcwd() for development setups where paths differ.
+
+(static function (): void {
+    $candidates = [
+        dirname(__FILE__, 4).'/autoload.php',   // local:  {project}/vendor/autoload.php
+                                                 // global: ~/.config/composer/vendor/autoload.php
+        getcwd().'/vendor/autoload.php',         // dev fallback: running from project root
+    ];
+
+    $autoload = null;
+    foreach ($candidates as $candidate) {
+        if (is_file($candidate)) {
+            $autoload = $candidate;
+            break;
+        }
+    }
+
+    if (null === $autoload) {
+        fwrite(\STDERR, "Cannot find vendor/autoload.php. Run vendor/bin/browse from your project root.\n");
+        exit(1);
+    }
+
+    require $autoload;
+})();
+
+use Survos\TuiExtrasBundle\SurvosTuiExtrasBundle;
+use Symfony\Component\Console\Application;
+use Symfony\Component\Console\ConsoleBundle;
+use Symfony\Component\DependencyInjection\Kernel\AbstractKernel;
+use Symfony\Component\DependencyInjection\Kernel\KernelTrait;
+use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
+
+// ── Inline kernel — no config files, no App namespace ────────────────────────
+
+class BrowseKernel extends AbstractKernel
+{
+    use KernelTrait;
+
+    private function getBundlesDefinition(): array
+    {
+        return [
+            ConsoleBundle::class => ['all' => true],
+            SurvosTuiExtrasBundle::class => ['all' => true],
+        ];
+    }
+
+    private function configureContainer(ContainerConfigurator $container): void
+    {
+        $container->services()
+            ->load('Survos\\TuiExtrasBundle\\Command\\', dirname(__DIR__).'/src/Command/')
+            ->autoconfigure()
+            ->autowire();
+    }
+}
+
+// Cache compiled container in /tmp so the bundle directory stays read-only
+$_SERVER['APP_CACHE_DIR'] = sys_get_temp_dir().'/survos-browse';
+$_SERVER['APP_LOG_DIR']   = false; // no log file needed
+
+$kernel = new BrowseKernel('prod', false);
+$kernel->boot();
+
+$app = new Application('browse', '0.1', $kernel->getContainer());
+$app->setDefaultCommand('browse:files');
+$app->run();

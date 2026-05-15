@@ -24,9 +24,7 @@ class Kernel extends AbstractKernel
 
     private function configureContainer(ContainerConfigurator $container): void
     {
-        $container->services()
-            ->load('App\\Command\\', __DIR__.'/../src/Command/')
-            ->autoconfigure()
-            ->autowire();
+        // Commands live in the bundle — no App\Command classes needed.
+        // Use vendor/bin/browse (or php ../bin/browse from demo/) to run them.
     }
 }

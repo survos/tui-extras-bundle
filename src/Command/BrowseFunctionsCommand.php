@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Command;
+namespace Survos\TuiExtrasBundle\Command;
 
 use Survos\TuiExtrasBundle\Event\TableRowChangeEvent;
 use Survos\TuiExtrasBundle\Model\TuiColumn;
@@ -20,43 +20,37 @@ use Symfony\Component\Tui\Tui;
 use Symfony\Component\Tui\Widget\ContainerWidget;
 
 /**
- * Demonstrates DataTableWidget + DetailPanelWidget in a split layout.
+ * Browse PHP built-in functions with FTS5 search and reflection detail pane.
+ * Demonstrates DataTableWidget + SqliteTableSource (in-memory SQLite + FTS5).
+ * Works in any PHP 8.1+ environment — no host app dependency.
  *
- * Data: all PHP internal functions — ~1300+ rows, FTS5 search.
- *
- * Try:  / str_   → all string functions
- *       / array  → all array functions
- *
- * Keybindings: ↑↓/j/k navigate · Space/Enter select · PgDn/PgUp page · / search · s sort · q quit
+ * Try: / str_  · / array  · / date
  */
-#[AsCommand('browse:functions', 'Browse PHP built-in functions with FTS5 search + detail pane')]
-final class DemoBrowseCommand
+#[AsCommand('browse:functions', 'Browse PHP built-in functions with FTS5 search', aliases: ['functions'])]
+class BrowseFunctionsCommand
 {
-    public function __invoke(
-        InputInterface $input,
-        OutputInterface $output,
-    ): int {
-        $pdo = $this->buildDatabase();
+    public function __invoke(InputInterface $input, OutputInterface $output): int
+    {
         $source = new SqliteTableSource(
-            pdo: $pdo,
+            pdo: $this->buildDatabase(),
             table: 'functions',
             ftsTable: 'fts_functions',
             columns: [
-                new TuiColumn(key: 'name', label: 'Function', sortable: true, searchable: true, order: 10),
+                new TuiColumn(key: 'name',      label: 'Function',  sortable: true, searchable: true, order: 10),
                 new TuiColumn(key: 'extension', label: 'Extension', width: 16, sortable: true, searchable: true, order: 20),
-                new TuiColumn(key: 'params', label: 'Params', width: 7, sortable: true, order: 30),
-                new TuiColumn(key: 'required', label: 'Req\'d', width: 6, sortable: true, order: 40),
+                new TuiColumn(key: 'params',    label: 'Params',    width: 7,  sortable: true, order: 30),
+                new TuiColumn(key: 'required',  label: "Req'd",     width: 6,  sortable: true, order: 40),
             ],
         );
 
         $stylesheet = new StyleSheet([
-            DataTableWidget::class.'::header'    => new Style(bold: true, color: 'cyan'),
-            DataTableWidget::class.'::separator' => new Style(dim: true),
-            DataTableWidget::class.'::selected'  => new Style(reverse: true, bold: true),
-            DataTableWidget::class.'::statusbar' => new Style(dim: true),
-            DataTableWidget::class.'::search'    => new Style(color: 'yellow'),
-            DataTableWidget::class.'::no-match'  => new Style(dim: true, italic: true),
-            DetailPanelWidget::class.'::title'   => new Style(bold: true, color: 'cyan'),
+            DataTableWidget::class.'::header'      => new Style(bold: true, color: 'cyan'),
+            DataTableWidget::class.'::separator'   => new Style(dim: true),
+            DataTableWidget::class.'::selected'    => new Style(reverse: true, bold: true),
+            DataTableWidget::class.'::statusbar'   => new Style(dim: true),
+            DataTableWidget::class.'::search'      => new Style(color: 'yellow'),
+            DataTableWidget::class.'::no-match'    => new Style(dim: true, italic: true),
+            DetailPanelWidget::class.'::title'     => new Style(bold: true, color: 'cyan'),
             DetailPanelWidget::class.'::separator' => new Style(dim: true),
         ]);
 
@@ -65,22 +59,22 @@ final class DemoBrowseCommand
 
         $table = new DataTableWidget($source);
         $table->onRowChange(static function (TableRowChangeEvent $event) use ($detail): void {
-            $row = $event->row;
+            $row     = $event->row;
             $content = "Extension: {$row['extension']}\n\n";
             try {
-                $rf = new \ReflectionFunction($row['name']);
+                $rf     = new \ReflectionFunction($row['name']);
                 $params = $rf->getParameters();
                 if ([] === $params) {
                     $content .= "Parameters: (none)\n";
                 } else {
                     $content .= "Parameters:\n";
                     foreach ($params as $p) {
-                        $type = $p->getType()?->getName() ?? 'mixed';
-                        $opt = $p->isOptional() ? ' [optional]' : '';
-                        $content .= "  \${$p->name}: {$type}{$opt}\n";
+                        $type     = $p->getType()?->getName() ?? 'mixed';
+                        $optional = $p->isOptional() ? ' [optional]' : '';
+                        $content .= "  \${$p->name}: {$type}{$optional}\n";
                     }
                 }
-                $ret = $rf->getReturnType();
+                $ret      = $rf->getReturnType();
                 $content .= "\nReturns: ".($ret ? $ret->getName() : 'mixed');
             } catch (\Throwable) {
                 $content .= "(reflection unavailable)";
@@ -88,8 +82,7 @@ final class DemoBrowseCommand
             $detail->setContent($content, $row['name'].'()');
         });
 
-        $split = (new ContainerWidget())
-            ->setStyle(new Style(direction: Direction::Horizontal, gap: 1));
+        $split = (new ContainerWidget())->setStyle(new Style(direction: Direction::Horizontal, gap: 1));
         $split->add($table->setStyle(new Style(maxColumns: 55)));
         $split->add($detail);
 
@@ -110,30 +103,19 @@ final class DemoBrowseCommand
     {
         $pdo = new \PDO('sqlite::memory:');
         $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-
-        $pdo->exec('
-            CREATE TABLE functions (
-                id       INTEGER PRIMARY KEY,
-                name     TEXT NOT NULL,
-                extension TEXT NOT NULL,
-                params   INTEGER NOT NULL DEFAULT 0,
-                required INTEGER NOT NULL DEFAULT 0
-            )
-        ');
+        $pdo->exec('CREATE TABLE functions (
+            id INTEGER PRIMARY KEY, name TEXT NOT NULL,
+            extension TEXT NOT NULL, params INTEGER NOT NULL DEFAULT 0, required INTEGER NOT NULL DEFAULT 0
+        )');
 
         $insert = $pdo->prepare('INSERT INTO functions (name, extension, params, required) VALUES (?, ?, ?, ?)');
-
         $pdo->beginTransaction();
         foreach ($this->collectFunctions() as $row) {
             $insert->execute($row);
         }
         $pdo->commit();
 
-        $pdo->exec('
-            CREATE VIRTUAL TABLE fts_functions USING fts5(
-                name, extension, content=functions, content_rowid=id
-            )
-        ');
+        $pdo->exec('CREATE VIRTUAL TABLE fts_functions USING fts5(name, extension, content=functions, content_rowid=id)');
         $pdo->exec("INSERT INTO fts_functions(fts_functions) VALUES('rebuild')");
 
         return $pdo;
@@ -144,7 +126,6 @@ final class DemoBrowseCommand
     {
         $names = get_defined_functions()['internal'];
         sort($names);
-
         foreach ($names as $name) {
             try {
                 $rf = new \ReflectionFunction($name);

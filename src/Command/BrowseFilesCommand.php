@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Command;
+namespace Survos\TuiExtrasBundle\Command;
 
 use Survos\TuiExtrasBundle\Event\TreeNodeChangeEvent;
 use Survos\TuiExtrasBundle\Highlighter\SyntaxHighlighter;
@@ -22,22 +22,27 @@ use Symfony\Component\Tui\Tui;
 use Symfony\Component\Tui\Widget\ContainerWidget;
 
 /**
- * Squall-style file browser: collapsible tree left, syntax-highlighted preview right.
+ * Collapsible file tree (left) with instant syntax-highlighted preview (right).
  *
- *   demo:files                      browse current directory
- *   demo:files ../src               browse bundle source
- *   demo:files . --no-gitignore     include git-ignored files
- *   demo:files . --pre-expand=2     open 2 levels deep on start
- *   demo:files . --raw              no syntax highlighting
+ * Works in any Symfony app that installs survos/tui-extras-bundle.
  *
- * Preview updates immediately as you navigate — no Enter required.
- * Uses bat/batcat if installed (200+ languages), otherwise token_get_all()
- * for PHP and stdlib pretty-print + tokenizer for JSON.
+ * Usage:
+ *   php bin/console browse:files                  # current directory
+ *   php bin/console browse:files /path/to/dir     # specific directory
+ *   php bin/console browse:files . --pre-expand=2 # expand 2 levels
+ *   php bin/console browse:files . --no-gitignore # include ignored files
+ *   php bin/console browse:files . --raw          # no syntax highlighting
  *
- * Keybindings: ↑↓/j/k navigate · →/← expand/collapse · Enter toggle/preview · q quit
+ * Keybindings:
+ *   ↑↓ / j k   navigate      → expand    ← collapse/parent
+ *   Enter/Space toggle/preview            q/ctrl+c quit
+ *
+ * Preview updates instantly on cursor move. PHP, JSON, and Markdown
+ * are formatted and syntax-highlighted; everything else uses bat/batcat
+ * if installed, otherwise plain text.
  */
-#[AsCommand('browse:files', 'Collapsible file tree with instant syntax-highlighted preview')]
-final class DemoFilesCommand
+#[AsCommand('browse:files', 'Collapsible file tree with instant syntax-highlighted preview', aliases: ['files'])]
+class BrowseFilesCommand
 {
     public function __invoke(
         InputInterface $input,
@@ -72,12 +77,10 @@ final class DemoFilesCommand
         $tree = new TreeWidget();
         $tree->setRoots($this->buildTree($directory, $directory, 0, $preExpand, $gitignore));
 
-        // Update preview immediately on every cursor move — no Enter required
         $tree->onCursorChange(static function (TreeNodeChangeEvent $event) use ($detail, $directory, $highlighter, $raw): void {
             $node = $event->node;
 
             if (!$node->isLeaf()) {
-                // Directory node: show a summary
                 $full = $directory.'/'.$node->data;
                 $detail->setContent(self::dirSummary($full), (string) $node->data);
 
@@ -93,7 +96,6 @@ final class DemoFilesCommand
                 return;
             }
 
-            // Binary / large file guard
             $size = filesize($full);
             if ($size > 512_000) {
                 $detail->setContent(\sprintf('(file too large: %s KB)', number_format($size / 1024, 1)), $rel);
@@ -113,7 +115,6 @@ final class DemoFilesCommand
             }
 
             $ext = strtolower(pathinfo($full, \PATHINFO_EXTENSION));
-
             if (!$raw && 'md' === $ext) {
                 $detail->setMarkdown((string) file_get_contents($full), $rel);
             } else {
@@ -124,7 +125,7 @@ final class DemoFilesCommand
 
         $split = (new ContainerWidget())
             ->setStyle(new Style(direction: Direction::Horizontal, gap: 1));
-        $split->add($tree->setStyle(new Style(maxColumns: 40)));
+        $split->add($tree->setStyle(new Style(maxColumns: 22)));
         $split->add($detail);
 
         $tui = new Tui($stylesheet);
@@ -140,7 +141,7 @@ final class DemoFilesCommand
         return Command::SUCCESS;
     }
 
-    private static function dirSummary(string $path): string
+    public static function dirSummary(string $path): string
     {
         if (!is_dir($path)) {
             return '';
@@ -165,9 +166,10 @@ final class DemoFilesCommand
 
         arsort($byExt);
 
-        $lines = [
-            \sprintf('%d director%s · %d file%s', \count($dirs), 1 === \count($dirs) ? 'y' : 'ies', \count($files), 1 === \count($files) ? '' : 's'),
-        ];
+        $lines = [\sprintf('%d director%s · %d file%s',
+            \count($dirs), 1 === \count($dirs) ? 'y' : 'ies',
+            \count($files), 1 === \count($files) ? '' : 's',
+        )];
 
         if ([] !== $byExt) {
             $lines[] = '';

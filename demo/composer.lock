@@ -657,7 +657,7 @@
             "dist": {
                 "type": "path",
                 "url": "..",
-                "reference": "02ec76bea1a1a35c96ecfa67bbab307ca2a3ddb4"
+                "reference": "5a0e6eb4761df2bc2ef92b18c3fda132975138f1"
             },
             "require": {
                 "league/commonmark": "^2.0",
@@ -670,6 +670,9 @@
                 "doctrine/dbal": "For DoctrineTableSource",
                 "survos/field-bundle": "For FieldDescriptor-based column definitions via TuiColumn::fromFieldDescriptor()"
             },
+            "bin": [
+                "bin/browse"
+            ],
             "type": "symfony-bundle",
             "extra": {
                 "symfony": {

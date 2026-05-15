@@ -15,6 +15,7 @@
         "doctrine/dbal": "For DoctrineTableSource",
         "survos/field-bundle": "For FieldDescriptor-based column definitions via TuiColumn::fromFieldDescriptor()"
     },
+    "bin": ["bin/browse"],
     "autoload": {
         "psr-4": {
             "Survos\\TuiExtrasBundle\\": "src/"
