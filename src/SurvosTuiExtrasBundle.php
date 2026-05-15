@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Survos\TuiExtrasBundle;
 
 use Symfony\Component\DependencyInjection\Kernel\AbstractBundle;
-use Symfony\Component\DependencyInjection\Kernel\RequiredBundle;
 
 /**
  * Extra TUI widgets and data-source abstractions for symfony/tui.
@@ -16,8 +15,10 @@ use Symfony\Component\DependencyInjection\Kernel\RequiredBundle;
  *
  * survos/field-bundle is an optional enhancement: when present,
  * TuiColumn::fromFieldDescriptor() bridges FieldDescriptor to TUI column metadata.
+ * Note: do NOT use #[RequiredBundle] for optional deps — it auto-registers any
+ * installed bundle class into every kernel that loads this bundle, even with
+ * ignoreOnInvalid: true (that flag only skips non-installed classes).
  */
-#[RequiredBundle('Survos\FieldBundle\SurvosFieldBundle', ignoreOnInvalid: true)]
 class SurvosTuiExtrasBundle extends AbstractBundle
 {
 }
