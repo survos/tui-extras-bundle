@@ -17,18 +17,15 @@
 
 // ── Locate the host project's vendor/autoload.php ────────────────────────────
 //
-// When installed via composer, this file lives at:
-//   vendor/survos/tui-extras-bundle/bin/browse   (real path)
-//   vendor/bin/browse                             (symlink)
-//
-// From the real path: dirname x4 = vendor/, dirname x5 = project root.
-// Fallback to getcwd() for development setups where paths differ.
+// Composer may install this file as a proxy wrapper or a symlink; __FILE__ may
+// resolve to vendor/bin/browse rather than the bundle's bin/browse. Always use
+// getcwd() first so "php vendor/bin/browse" from the project root just works.
 
 (static function (): void {
     $candidates = [
-        dirname(__FILE__, 4).'/autoload.php',   // local:  {project}/vendor/autoload.php
-                                                 // global: ~/.config/composer/vendor/autoload.php
-        getcwd().'/vendor/autoload.php',         // dev fallback: running from project root
+        getcwd().'/vendor/autoload.php',            // running from project root (most common)
+        dirname(__FILE__, 4).'/autoload.php',        // real path: vendor/survos/.../bin/browse
+        dirname(__FILE__, 2).'/autoload.php',        // symlink:   vendor/bin/browse
     ];
 
     $autoload = null;
@@ -70,15 +67,20 @@ class BrowseKernel extends AbstractKernel
 
     private function configureContainer(ContainerConfigurator $container): void
     {
+        // Resolve the bundle's real src/ path via reflection — works regardless of
+        // whether this script was invoked via proxy wrapper, symlink, or directly.
+        $bundleDir = dirname((new \ReflectionClass(SurvosTuiExtrasBundle::class))->getFileName(), 2);
         $container->services()
-            ->load('Survos\\TuiExtrasBundle\\Command\\', dirname(__DIR__).'/src/Command/')
+            ->load('Survos\\TuiExtrasBundle\\Command\\', $bundleDir.'/src/Command/')
             ->autoconfigure()
             ->autowire();
     }
 }
 
-// Cache compiled container in /tmp so the bundle directory stays read-only
-$_SERVER['APP_CACHE_DIR'] = sys_get_temp_dir().'/survos-browse';
+// Per-install cache: each composer install gets its own compiled container so
+// different projects never share a stale container with wrong hardcoded paths.
+$bundleDir = dirname((new \ReflectionClass(SurvosTuiExtrasBundle::class))->getFileName(), 2);
+$_SERVER['APP_CACHE_DIR'] = sys_get_temp_dir().'/survos-browse-'.substr(md5($bundleDir), 0, 8);
 $_SERVER['APP_LOG_DIR']   = false; // no log file needed
 
 $kernel = new BrowseKernel('prod', false);
