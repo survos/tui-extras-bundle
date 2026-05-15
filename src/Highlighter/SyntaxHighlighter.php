@@ -228,6 +228,35 @@ final class SyntaxHighlighter
         return '' !== $text ? "\e[{$code}m{$text}\e[0m" : '';
     }
 
+    /**
+     * Fix headings rendered by MarkdownWidget when called without widget-tree attachment.
+     *
+     * MarkdownWidget::renderHeading() uses resolveElement('heading') which returns a blank
+     * Style when the widget has no WidgetContext. The heading text still gets the '## ' prefix
+     * but no ANSI styling. This post-processor strips the prefix and applies our own bold/color.
+     *
+     * @param string[] $lines
+     * @return string[]
+     */
+    public static function fixHeadings(array $lines): array
+    {
+        return array_map(static function (string $line): string {
+            if (!preg_match('/^(#{1,6}) (.+)$/', $line, $m)) {
+                return $line;
+            }
+            $level = \strlen($m[1]);
+            $text  = $m[2];
+            // h1: bold yellow underline, h2: bold cyan, h3+: bold white
+            $code = match (true) {
+                1 === $level => '1;4;33',  // bold + underline + yellow
+                2 === $level => '1;36',    // bold cyan
+                default      => '1;37',    // bold white
+            };
+
+            return "\e[{$code}m{$text}\e[0m";
+        }, $lines);
+    }
+
     /** @return string[]|null null if bat unavailable or fails */
     private function batHighlight(string $bat, string $path): ?array
     {

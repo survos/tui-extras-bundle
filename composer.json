@@ -6,7 +6,10 @@
     "keywords": ["symfony", "tui", "terminal", "datatable", "widget"],
     "require": {
         "php": "^8.1",
-        "symfony/tui": "^8.1"
+        "league/commonmark": "^2.0",
+        "symfony/finder": "^8.1",
+        "symfony/tui": "^8.1",
+        "tempest/highlight": "^2.0"
     },
     "suggest": {
         "doctrine/dbal": "For DoctrineTableSource",

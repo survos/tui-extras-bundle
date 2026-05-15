@@ -112,8 +112,14 @@ final class DemoFilesCommand
                 return;
             }
 
-            $lines = $highlighter->highlightFile($full, $raw);
-            $detail->setContent(implode("\n", $lines), $rel);
+            $ext = strtolower(pathinfo($full, \PATHINFO_EXTENSION));
+
+            if (!$raw && 'md' === $ext) {
+                $detail->setMarkdown((string) file_get_contents($full), $rel);
+            } else {
+                $lines = $highlighter->highlightFile($full, $raw);
+                $detail->setContent(implode("\n", $lines), $rel);
+            }
         });
 
         $split = (new ContainerWidget())
