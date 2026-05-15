@@ -1,0 +1,25 @@
+{
+    "name": "survos/tui-extras-bundle",
+    "description": "Extra TUI widgets and data source abstractions for symfony/tui",
+    "type": "symfony-bundle",
+    "license": "MIT",
+    "keywords": ["symfony", "tui", "terminal", "datatable", "widget"],
+    "require": {
+        "php": "^8.1",
+        "symfony/tui": "^8.1"
+    },
+    "suggest": {
+        "doctrine/dbal": "For DoctrineTableSource",
+        "survos/field-bundle": "For FieldDescriptor-based column definitions via TuiColumn::fromFieldDescriptor()"
+    },
+    "autoload": {
+        "psr-4": {
+            "Survos\\TuiExtrasBundle\\": "src/"
+        }
+    },
+    "extra": {
+        "symfony": {
+            "require": "^8.1"
+        }
+    }
+}
