@@ -77,13 +77,11 @@ class BrowseKernel extends AbstractKernel
     }
 }
 
-// Per-install cache: each composer install gets its own compiled container so
-// different projects never share a stale container with wrong hardcoded paths.
 $bundleDir = dirname((new \ReflectionClass(SurvosTuiExtrasBundle::class))->getFileName(), 2);
 $_SERVER['APP_CACHE_DIR'] = sys_get_temp_dir().'/survos-browse-'.substr(md5($bundleDir), 0, 8);
-$_SERVER['APP_LOG_DIR']   = false; // no log file needed
+$_SERVER['APP_LOG_DIR']   = sys_get_temp_dir();
 
-$kernel = new BrowseKernel('prod', false);
+$kernel = new BrowseKernel('dev', true);
 $kernel->boot();
 
 $app = new Application('browse', '0.1', $kernel->getContainer());
