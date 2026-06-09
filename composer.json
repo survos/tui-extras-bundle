@@ -5,7 +5,7 @@
     "license": "MIT",
     "keywords": ["symfony", "tui", "terminal", "datatable", "widget"],
     "require": {
-        "php": "^8.1",
+        "php": "^8.5",
         "league/commonmark": "^2.0",
         "symfony/finder": "^8.1",
         "symfony/tui": "^8.1",
