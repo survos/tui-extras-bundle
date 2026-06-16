@@ -10,7 +10,8 @@
         "survos/kit-bundle": "^2.8",
         "symfony/finder": "^8.1",
         "symfony/tui": "^8.1",
-        "tempest/highlight": "^2.0"
+        "tempest/highlight": "^2.0",
+        "symfony/console": "^8.1"
     },
     "suggest": {
         "doctrine/dbal": "For DoctrineTableSource",

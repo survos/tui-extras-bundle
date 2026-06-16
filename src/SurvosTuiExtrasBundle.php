@@ -6,7 +6,9 @@ namespace Survos\TuiExtrasBundle;
 
 use Survos\Kit\AbstractSurvosBundle;
 use Survos\Kit\SurvosKitBundle;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Kernel\RequiredBundle;
+use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 
 /**
  * Extra TUI widgets and data-source abstractions for symfony/tui.
@@ -18,6 +20,10 @@ use Symfony\Component\DependencyInjection\Kernel\RequiredBundle;
  * ignoreOnInvalid: true (that flag only skips non-installed classes).
  */
 #[RequiredBundle(SurvosKitBundle::class)]
-class SurvosTuiExtrasBundle extends AbstractSurvosBundle
+final class SurvosTuiExtrasBundle extends AbstractSurvosBundle
 {
+    public function loadExtension(array $config, ContainerConfigurator $container, ContainerBuilder $builder): void
+    {
+        parent::loadExtension($config, $container, $builder);
+    }
 }
