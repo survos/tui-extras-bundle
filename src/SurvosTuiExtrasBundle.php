@@ -20,10 +20,7 @@ use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigura
  * ignoreOnInvalid: true (that flag only skips non-installed classes).
  */
 #[RequiredBundle(SurvosKitBundle::class)]
+// Symfony\Component\HttpKernel\Bundle\Bundle <-- required for Flex auto-registering in config/bundles.php!!
 final class SurvosTuiExtrasBundle extends AbstractSurvosBundle
 {
-    public function loadExtension(array $config, ContainerConfigurator $container, ContainerBuilder $builder): void
-    {
-        parent::loadExtension($config, $container, $builder);
-    }
 }
