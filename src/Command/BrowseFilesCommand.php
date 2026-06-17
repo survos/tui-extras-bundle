@@ -125,7 +125,7 @@ class BrowseFilesCommand
 
         $split = (new ContainerWidget())
             ->setStyle(new Style(direction: Direction::Horizontal, gap: 1));
-        $split->add($tree->setStyle(new Style(maxColumns: 22)));
+        $split->add($tree->setStyle(new Style(maxColumns: 16)));
         $split->add($detail);
 
         $tui = new Tui($stylesheet);
