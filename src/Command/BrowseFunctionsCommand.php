@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Survos\TuiExtrasBundle\Command;
 
 use Survos\TuiExtrasBundle\Event\TableRowChangeEvent;
+use Survos\TuiExtrasBundle\Input\MouseInput;
 use Survos\TuiExtrasBundle\Model\TuiColumn;
 use Survos\TuiExtrasBundle\Source\SqliteTableSource;
 use Survos\TuiExtrasBundle\Widget\DataTableWidget;
@@ -89,7 +90,7 @@ class BrowseFunctionsCommand
         $tui = new Tui($stylesheet);
         $tui->add($split);
         $tui->setFocus($table);
-        $tui->run();
+        (new MouseInput())->run($tui);
 
         $selected = $table->getSelectedRow();
         if (null !== $selected) {

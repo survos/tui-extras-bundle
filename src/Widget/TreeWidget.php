@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Survos\TuiExtrasBundle\Widget;
 
+use Survos\TuiExtrasBundle\Contract\MouseAwareInterface;
+use Survos\TuiExtrasBundle\Enum\MouseButton;
+use Survos\TuiExtrasBundle\Event\MouseEvent;
 use Survos\TuiExtrasBundle\Event\TreeNodeChangeEvent;
 use Survos\TuiExtrasBundle\Event\TreeNodeSelectEvent;
 use Survos\TuiExtrasBundle\Model\TreeNode;
@@ -39,7 +42,7 @@ use Symfony\Component\Tui\Widget\VerticallyExpandableInterface;
  *   Enter/Space  toggle branch / dispatch TreeNodeSelectEvent on leaf
  *   q/ctrl+c     quit
  */
-class TreeWidget extends AbstractWidget implements FocusableInterface, VerticallyExpandableInterface
+class TreeWidget extends AbstractWidget implements FocusableInterface, MouseAwareInterface, VerticallyExpandableInterface
 {
     use FocusableTrait;
     use KeybindingsTrait;
@@ -145,21 +148,13 @@ class TreeWidget extends AbstractWidget implements FocusableInterface, Verticall
         $kb = $this->getKeybindings();
 
         if ($kb->matches($data, 'cursor_up')) {
-            if ($this->cursor > 0) {
-                --$this->cursor;
-                $this->dispatchCursorChange();
-                $this->invalidate();
-            }
+            $this->moveCursor(-1);
 
             return;
         }
 
         if ($kb->matches($data, 'cursor_down')) {
-            if ($this->cursor < \count($this->visible) - 1) {
-                ++$this->cursor;
-                $this->dispatchCursorChange();
-                $this->invalidate();
-            }
+            $this->moveCursor(1);
 
             return;
         }
@@ -209,6 +204,27 @@ class TreeWidget extends AbstractWidget implements FocusableInterface, Verticall
         if ($kb->matches($data, 'quit')) {
             $this->dispatchQuit();
         }
+    }
+
+    public function handleMouse(MouseEvent $event): void
+    {
+        match ($event->button) {
+            MouseButton::WheelUp => $this->moveCursor(-1),
+            MouseButton::WheelDown => $this->moveCursor(1),
+            default => null,
+        };
+    }
+
+    private function moveCursor(int $delta): void
+    {
+        $next = max(0, min(\count($this->visible) - 1, $this->cursor + $delta));
+        if ($next === $this->cursor) {
+            return;
+        }
+
+        $this->cursor = $next;
+        $this->dispatchCursorChange();
+        $this->invalidate();
     }
 
     /** @return array<string,string[]> */

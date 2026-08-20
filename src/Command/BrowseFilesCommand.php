@@ -6,6 +6,7 @@ namespace Survos\TuiExtrasBundle\Command;
 
 use Survos\TuiExtrasBundle\Event\TreeNodeChangeEvent;
 use Survos\TuiExtrasBundle\Highlighter\SyntaxHighlighter;
+use Survos\TuiExtrasBundle\Input\MouseInput;
 use Survos\TuiExtrasBundle\Model\TreeNode;
 use Survos\TuiExtrasBundle\Widget\DetailPanelWidget;
 use Survos\TuiExtrasBundle\Widget\TreeWidget;
@@ -131,7 +132,7 @@ class BrowseFilesCommand
         $tui = new Tui($stylesheet);
         $tui->add($split);
         $tui->setFocus($tree);
-        $tui->run();
+        (new MouseInput())->run($tui);
 
         $selected = $tree->getCursorNode();
         if (null !== $selected && $selected->isLeaf()) {

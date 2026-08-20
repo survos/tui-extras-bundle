@@ -17,6 +17,22 @@ Extra TUI widgets and data-source abstractions for [`symfony/tui`](https://githu
 | `TreeWidget` | Collapsible tree — `▼`/`►` branches, `──` leaves. Keyboard navigate. |
 | `DetailPanelWidget` | Read-only text/code pane with title and separator. |
 
+All bundled browsers opt into mouse reporting. The scroll wheel moves through
+the focused `TreeWidget` or `DataTableWidget`; keyboard navigation remains
+available. Mouse mode is disabled in a `finally` block when the TUI exits so
+normal terminal scrollback and text selection are restored.
+
+Applications can enable the same behavior for custom widgets by implementing
+`MouseAwareInterface` and running the TUI through `MouseInput`:
+
+```php
+$tui = new Tui();
+$tui->add($mouseAwareWidget);
+$tui->setFocus($mouseAwareWidget);
+
+(new MouseInput())->run($tui);
+```
+
 ### Data sources (`TuiTableSourceInterface`)
 
 | Source | Backed by |

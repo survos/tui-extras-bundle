@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace Survos\TuiExtrasBundle\Widget;
 
+use Survos\TuiExtrasBundle\Contract\MouseAwareInterface;
 use Survos\TuiExtrasBundle\Contract\TuiTableSourceInterface;
+use Survos\TuiExtrasBundle\Enum\MouseButton;
+use Survos\TuiExtrasBundle\Event\MouseEvent;
 use Survos\TuiExtrasBundle\Event\TableRowChangeEvent;
 use Survos\TuiExtrasBundle\Event\TableRowEvent;
 use Survos\TuiExtrasBundle\Model\TuiColumn;
@@ -40,7 +43,7 @@ use Symfony\Component\Tui\Widget\QuitableTrait;
  *   Enter               commit search
  *   Esc                 cancel (restore previous query)
  */
-class DataTableWidget extends AbstractWidget implements FocusableInterface
+class DataTableWidget extends AbstractWidget implements FocusableInterface, MouseAwareInterface
 {
     use FocusableTrait;
     use KeybindingsTrait;
@@ -150,29 +153,13 @@ class DataTableWidget extends AbstractWidget implements FocusableInterface
         $kb = $this->getKeybindings();
 
         if ($kb->matches($data, 'row_up')) {
-            if ($this->selectedRow > 0) {
-                --$this->selectedRow;
-            } elseif ($this->offset > 0) {
-                $this->offset = max(0, $this->offset - $this->limit);
-                $this->selectedRow = max(0, $this->limit - 1);
-                $this->dataDirty = true;
-            }
-            $this->dispatchSelectionChange();
-            $this->invalidate();
+            $this->moveSelection(-1);
 
             return;
         }
 
         if ($kb->matches($data, 'row_down')) {
-            if ($this->selectedRow < \count($this->currentRows) - 1) {
-                ++$this->selectedRow;
-            } elseif ($this->offset + $this->limit < $this->totalCount) {
-                $this->offset += $this->limit;
-                $this->selectedRow = 0;
-                $this->dataDirty = true;
-            }
-            $this->dispatchSelectionChange();
-            $this->invalidate();
+            $this->moveSelection(1);
 
             return;
         }
@@ -239,6 +226,39 @@ class DataTableWidget extends AbstractWidget implements FocusableInterface
             $this->dispatchQuit();
         }
         // all other keys are silently ignored
+    }
+
+    public function handleMouse(MouseEvent $event): void
+    {
+        match ($event->button) {
+            MouseButton::WheelUp => $this->moveSelection(-1),
+            MouseButton::WheelDown => $this->moveSelection(1),
+            default => null,
+        };
+    }
+
+    private function moveSelection(int $delta): void
+    {
+        if ($delta < 0) {
+            if ($this->selectedRow > 0) {
+                --$this->selectedRow;
+            } elseif ($this->offset > 0) {
+                $this->offset = max(0, $this->offset - $this->limit);
+                $this->selectedRow = max(0, $this->limit - 1);
+                $this->dataDirty = true;
+            }
+        } elseif ($delta > 0) {
+            if ($this->selectedRow < \count($this->currentRows) - 1) {
+                ++$this->selectedRow;
+            } elseif ($this->offset + $this->limit < $this->totalCount) {
+                $this->offset += $this->limit;
+                $this->selectedRow = 0;
+                $this->dataDirty = true;
+            }
+        }
+
+        $this->dispatchSelectionChange();
+        $this->invalidate();
     }
 
     /** @return array<string,string[]> */
