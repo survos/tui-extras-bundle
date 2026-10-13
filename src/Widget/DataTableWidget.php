@@ -67,7 +67,8 @@ class DataTableWidget extends AbstractWidget implements FocusableInterface, Mous
 
     public function __construct(
         private readonly TuiTableSourceInterface $source,
-    ) {}
+    ) {
+    }
 
     /** @return array<string,mixed>|null */
     public function getSelectedRow(): ?array
@@ -402,6 +403,7 @@ class DataTableWidget extends AbstractWidget implements FocusableInterface, Mous
 
     /**
      * @param TuiColumn[] $cols
+     *
      * @return int[]
      */
     private function computeWidths(array $cols, int $totalColumns): array

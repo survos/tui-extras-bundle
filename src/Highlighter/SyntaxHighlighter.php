@@ -73,7 +73,7 @@ final class SyntaxHighlighter
         }
 
         $lines = match ($ext) {
-            'php'  => $this->highlightPhp($content),
+            'php' => $this->highlightPhp($content),
             'json' => $this->highlightJson($content),
             default => explode("\n", $content),
         };
@@ -110,22 +110,14 @@ final class SyntaxHighlighter
             [$type, $text] = $token;
 
             $styled = match (true) {
-                isset($keywords[$type])
-                    => $this->styleLines($text, '1;35'),   // bold magenta — keywords
-                \T_VARIABLE === $type
-                    => $this->styleLines($text, '36'),     // cyan — $variables
-                \in_array($type, [\T_CONSTANT_ENCAPSED_STRING, \T_ENCAPSED_AND_WHITESPACE, \T_START_HEREDOC, \T_END_HEREDOC], true)
-                    => $this->styleLines($text, '33'),     // yellow — strings
-                \in_array($type, [\T_LNUMBER, \T_DNUMBER], true)
-                    => $this->styleLines($text, '36'),     // cyan — numbers
-                \in_array($type, [\T_COMMENT, \T_DOC_COMMENT], true)
-                    => $this->styleLines($text, '2;32'),   // dim green — comments
-                \T_ATTRIBUTE === $type
-                    => $this->styleLines($text, '33'),     // yellow — #[Attribute]
-                \in_array($type, [\T_STRING, \T_NAME_FULLY_QUALIFIED, \T_NAME_RELATIVE, \T_NAME_QUALIFIED], true)
-                    => $this->styleLines($text, '37'),     // white — identifiers
-                \T_WHITESPACE === $type || \T_OPEN_TAG === $type || \T_CLOSE_TAG === $type
-                    => $text,
+                isset($keywords[$type]) => $this->styleLines($text, '1;35'),   // bold magenta — keywords
+                \T_VARIABLE === $type => $this->styleLines($text, '36'),     // cyan — $variables
+                \in_array($type, [\T_CONSTANT_ENCAPSED_STRING, \T_ENCAPSED_AND_WHITESPACE, \T_START_HEREDOC, \T_END_HEREDOC], true) => $this->styleLines($text, '33'),     // yellow — strings
+                \in_array($type, [\T_LNUMBER, \T_DNUMBER], true) => $this->styleLines($text, '36'),     // cyan — numbers
+                \in_array($type, [\T_COMMENT, \T_DOC_COMMENT], true) => $this->styleLines($text, '2;32'),   // dim green — comments
+                \T_ATTRIBUTE === $type => $this->styleLines($text, '33'),     // yellow — #[Attribute]
+                \in_array($type, [\T_STRING, \T_NAME_FULLY_QUALIFIED, \T_NAME_RELATIVE, \T_NAME_QUALIFIED], true) => $this->styleLines($text, '37'),     // white — identifiers
+                \T_WHITESPACE === $type || \T_OPEN_TAG === $type || \T_CLOSE_TAG === $type => $text,
                 default => $text,
             };
 
@@ -156,7 +148,7 @@ final class SyntaxHighlighter
     {
         // Preserve leading whitespace
         $trimmed = ltrim($line);
-        $indent  = substr($line, 0, \strlen($line) - \strlen($trimmed));
+        $indent = substr($line, 0, \strlen($line) - \strlen($trimmed));
 
         if ('' === $trimmed) {
             return $line;
@@ -174,15 +166,12 @@ final class SyntaxHighlighter
     private function colorizeJsonValue(string $val): string
     {
         $val = trim($val);
+
         return match (true) {
-            '' === $val || \in_array($val, ['{', '}', '[', ']', '{,', '},', '[,', '],'], true)
-                => $val,                                    // structural — no color
-            '"' === ($val[0] ?? '')
-                => $this->ansi($val, '33'),                // yellow — string
-            \in_array($val, ['true', 'false', 'null'], true)
-                => $this->ansi($val, '35'),                // magenta — literal
-            is_numeric($val)
-                => $this->ansi($val, '36'),                // cyan — number
+            '' === $val || \in_array($val, ['{', '}', '[', ']', '{,', '},', '[,', '],'], true) => $val,                                    // structural — no color
+            '"' === ($val[0] ?? '') => $this->ansi($val, '33'),                // yellow — string
+            \in_array($val, ['true', 'false', 'null'], true) => $this->ansi($val, '35'),                // magenta — literal
+            is_numeric($val) => $this->ansi($val, '36'),                // cyan — number
             default => $val,
         };
     }
@@ -212,6 +201,7 @@ final class SyntaxHighlighter
 
     /**
      * Append potentially-multi-line styled text to the lines array in-place.
+     *
      * @param string[] $lines
      */
     private function appendToLines(array &$lines, string $text): void
@@ -236,6 +226,7 @@ final class SyntaxHighlighter
      * but no ANSI styling. This post-processor strips the prefix and applies our own bold/color.
      *
      * @param string[] $lines
+     *
      * @return string[]
      */
     public static function fixHeadings(array $lines): array
@@ -245,12 +236,12 @@ final class SyntaxHighlighter
                 return $line;
             }
             $level = \strlen($m[1]);
-            $text  = $m[2];
+            $text = $m[2];
             // h1: bold yellow underline, h2: bold cyan, h3+: bold white
             $code = match (true) {
                 1 === $level => '1;4;33',  // bold + underline + yellow
                 2 === $level => '1;36',    // bold cyan
-                default      => '1;37',    // bold white
+                default => '1;37',    // bold white
             };
 
             return "\e[{$code}m{$text}\e[0m";

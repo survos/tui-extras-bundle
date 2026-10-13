@@ -295,7 +295,7 @@ class TreeWidget extends AbstractWidget implements FocusableInterface, MouseAwar
 
     private function moveToParent(): void
     {
-        if ($this->cursor === 0) {
+        if (0 === $this->cursor) {
             return;
         }
         $currentDepth = $this->visible[$this->cursor]['depth'];

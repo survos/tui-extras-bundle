@@ -91,9 +91,9 @@ class DetailPanelWidget extends AbstractWidget implements VerticallyExpandableIn
 
     public function render(RenderContext $context): array
     {
-        $cols    = $context->getColumns();
+        $cols = $context->getColumns();
         $maxRows = $context->getRows();
-        $lines   = [];
+        $lines = [];
 
         if ('' !== $this->title) {
             $lines[] = $this->applyElement('title', AnsiUtils::truncateToWidth(
@@ -111,7 +111,7 @@ class DetailPanelWidget extends AbstractWidget implements VerticallyExpandableIn
             // MarkdownWidget uses DarkTerminalTheme ANSI codes, not the stylesheet,
             // so calling render() without attachment is safe.
             $bodyContext = $context->withRows($bodyRows);
-            $bodyLines   = SyntaxHighlighter::fixHeadings($this->markdownWidget->render($bodyContext));
+            $bodyLines = SyntaxHighlighter::fixHeadings($this->markdownWidget->render($bodyContext));
 
             foreach ($bodyLines as $line) {
                 if (\count($lines) >= $maxRows) {

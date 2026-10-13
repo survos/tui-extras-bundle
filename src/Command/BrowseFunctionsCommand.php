@@ -37,21 +37,21 @@ class BrowseFunctionsCommand
             table: 'functions',
             ftsTable: 'fts_functions',
             columns: [
-                new TuiColumn(key: 'name',      label: 'Function',  sortable: true, searchable: true, order: 10),
+                new TuiColumn(key: 'name', label: 'Function', sortable: true, searchable: true, order: 10),
                 new TuiColumn(key: 'extension', label: 'Extension', width: 16, sortable: true, searchable: true, order: 20),
-                new TuiColumn(key: 'params',    label: 'Params',    width: 7,  sortable: true, order: 30),
-                new TuiColumn(key: 'required',  label: "Req'd",     width: 6,  sortable: true, order: 40),
+                new TuiColumn(key: 'params', label: 'Params', width: 7, sortable: true, order: 30),
+                new TuiColumn(key: 'required', label: "Req'd", width: 6, sortable: true, order: 40),
             ],
         );
 
         $stylesheet = new StyleSheet([
-            DataTableWidget::class.'::header'      => new Style(bold: true, color: 'cyan'),
-            DataTableWidget::class.'::separator'   => new Style(dim: true),
-            DataTableWidget::class.'::selected'    => new Style(reverse: true, bold: true),
-            DataTableWidget::class.'::statusbar'   => new Style(dim: true),
-            DataTableWidget::class.'::search'      => new Style(color: 'yellow'),
-            DataTableWidget::class.'::no-match'    => new Style(dim: true, italic: true),
-            DetailPanelWidget::class.'::title'     => new Style(bold: true, color: 'cyan'),
+            DataTableWidget::class.'::header' => new Style(bold: true, color: 'cyan'),
+            DataTableWidget::class.'::separator' => new Style(dim: true),
+            DataTableWidget::class.'::selected' => new Style(reverse: true, bold: true),
+            DataTableWidget::class.'::statusbar' => new Style(dim: true),
+            DataTableWidget::class.'::search' => new Style(color: 'yellow'),
+            DataTableWidget::class.'::no-match' => new Style(dim: true, italic: true),
+            DetailPanelWidget::class.'::title' => new Style(bold: true, color: 'cyan'),
             DetailPanelWidget::class.'::separator' => new Style(dim: true),
         ]);
 
@@ -60,25 +60,25 @@ class BrowseFunctionsCommand
 
         $table = new DataTableWidget($source);
         $table->onRowChange(static function (TableRowChangeEvent $event) use ($detail): void {
-            $row     = $event->row;
+            $row = $event->row;
             $content = "Extension: {$row['extension']}\n\n";
             try {
-                $rf     = new \ReflectionFunction($row['name']);
+                $rf = new \ReflectionFunction($row['name']);
                 $params = $rf->getParameters();
                 if ([] === $params) {
                     $content .= "Parameters: (none)\n";
                 } else {
                     $content .= "Parameters:\n";
                     foreach ($params as $p) {
-                        $type     = $p->getType()?->getName() ?? 'mixed';
+                        $type = $p->getType()?->getName() ?? 'mixed';
                         $optional = $p->isOptional() ? ' [optional]' : '';
                         $content .= "  \${$p->name}: {$type}{$optional}\n";
                     }
                 }
-                $ret      = $rf->getReturnType();
+                $ret = $rf->getReturnType();
                 $content .= "\nReturns: ".($ret ? $ret->getName() : 'mixed');
             } catch (\Throwable) {
-                $content .= "(reflection unavailable)";
+                $content .= '(reflection unavailable)';
             }
             $detail->setContent($content, $row['name'].'()');
         });

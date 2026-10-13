@@ -64,11 +64,11 @@ class BrowseFilesCommand
         $highlighter = new SyntaxHighlighter();
 
         $stylesheet = new StyleSheet([
-            TreeWidget::class.'::branch-expanded'  => new Style(bold: true, color: 'green'),
+            TreeWidget::class.'::branch-expanded' => new Style(bold: true, color: 'green'),
             TreeWidget::class.'::branch-collapsed' => new Style(color: 'green'),
-            TreeWidget::class.'::leaf'             => new Style(dim: false),
-            TreeWidget::class.'::selected'         => new Style(reverse: true, bold: true),
-            DetailPanelWidget::class.'::title'     => new Style(bold: true, color: 'green'),
+            TreeWidget::class.'::leaf' => new Style(dim: false),
+            TreeWidget::class.'::selected' => new Style(reverse: true, bold: true),
+            DetailPanelWidget::class.'::title' => new Style(bold: true, color: 'green'),
             DetailPanelWidget::class.'::separator' => new Style(dim: true),
         ]);
 
@@ -88,7 +88,7 @@ class BrowseFilesCommand
                 return;
             }
 
-            $rel  = (string) $node->data;
+            $rel = (string) $node->data;
             $full = $directory.'/'.$rel;
 
             if (!is_readable($full)) {
@@ -213,8 +213,8 @@ class BrowseFilesCommand
 
         $nodes = [];
         foreach ($dirs as $name) {
-            $full   = $dir.'/'.$name;
-            $rel    = ltrim(substr($full, \strlen($root)), '/');
+            $full = $dir.'/'.$name;
+            $rel = ltrim(substr($full, \strlen($root)), '/');
             $branch = TreeNode::branch($name.'/', $rel, $depth < $preExpand);
             foreach ($this->buildTree($root, $full, $depth + 1, $preExpand, $gitignore) as $child) {
                 $branch->addChild($child);
@@ -223,8 +223,8 @@ class BrowseFilesCommand
         }
 
         foreach ($files as $name) {
-            $full    = $dir.'/'.$name;
-            $rel     = ltrim(substr($full, \strlen($root)), '/');
+            $full = $dir.'/'.$name;
+            $rel = ltrim(substr($full, \strlen($root)), '/');
             $nodes[] = TreeNode::leaf($name, $rel);
         }
 

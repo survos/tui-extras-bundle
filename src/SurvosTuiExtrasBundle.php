@@ -6,9 +6,7 @@ namespace Survos\TuiExtrasBundle;
 
 use Survos\Kit\AbstractSurvosBundle;
 use Survos\Kit\SurvosKitBundle;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Kernel\RequiredBundle;
-use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 
 /**
  * Extra TUI widgets and data-source abstractions for symfony/tui.

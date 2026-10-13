@@ -58,11 +58,11 @@ class BrowseCommandsCommand
         [$tree, $descriptions] = $this->buildTree($data);
 
         $stylesheet = new StyleSheet([
-            TreeWidget::class.'::branch-expanded'  => new Style(bold: true, color: 'cyan'),
+            TreeWidget::class.'::branch-expanded' => new Style(bold: true, color: 'cyan'),
             TreeWidget::class.'::branch-collapsed' => new Style(color: 'cyan'),
-            TreeWidget::class.'::leaf'             => new Style(dim: false),
-            TreeWidget::class.'::selected'         => new Style(reverse: true, bold: true),
-            DetailPanelWidget::class.'::title'     => new Style(bold: true, color: 'cyan'),
+            TreeWidget::class.'::leaf' => new Style(dim: false),
+            TreeWidget::class.'::selected' => new Style(reverse: true, bold: true),
+            DetailPanelWidget::class.'::title' => new Style(bold: true, color: 'cyan'),
             DetailPanelWidget::class.'::separator' => new Style(dim: true),
         ]);
 
@@ -127,7 +127,7 @@ class BrowseCommandsCommand
     }
 
     /**
-     * @return array{TreeWidget, array<string,string>}  [widget, name→description map]
+     * @return array{TreeWidget, array<string,string>} [widget, name→description map]
      */
     private function buildTree(array $data): array
     {
@@ -144,7 +144,7 @@ class BrowseCommandsCommand
             $descriptions[$name] = $desc;
 
             $colon = strpos($name, ':');
-            $ns    = false !== $colon ? substr($name, 0, $colon) : '_global';
+            $ns = false !== $colon ? substr($name, 0, $colon) : '_global';
             $byNamespace[$ns][] = ['name' => $name, 'description' => $desc];
         }
 

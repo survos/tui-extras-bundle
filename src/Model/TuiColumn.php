@@ -25,7 +25,8 @@ final class TuiColumn
         public readonly bool $visible = true,
         public readonly ?string $format = null,
         public readonly int $order = 100,
-    ) {}
+    ) {
+    }
 
     public static function make(string $key, ?string $label = null): self
     {

@@ -88,6 +88,7 @@ final class ArrayTableSource implements TuiTableSourceInterface
                         return true;
                     }
                 }
+
                 return false;
             },
         ));

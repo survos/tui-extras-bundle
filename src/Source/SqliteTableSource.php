@@ -25,9 +25,9 @@ final class SqliteTableSource implements TuiTableSourceInterface
     private readonly array $columns;
 
     /**
-     * @param string      $table     Main data table name
-     * @param string|null $ftsTable  FTS5 virtual table name (null = LIKE fallback)
-     * @param TuiColumn[] $columns   Leave empty to auto-derive from PRAGMA table_info
+     * @param string      $table    Main data table name
+     * @param string|null $ftsTable FTS5 virtual table name (null = LIKE fallback)
+     * @param TuiColumn[] $columns  Leave empty to auto-derive from PRAGMA table_info
      */
     public function __construct(
         private readonly \PDO $pdo,
@@ -84,7 +84,7 @@ final class SqliteTableSource implements TuiTableSourceInterface
                 try {
                     // FTS5: join back to content table, rank by relevance, then sort
                     $orderClause = null !== $sortBy
-                        ? "t.".self::quoteId($sortBy)." {$safeDir}"
+                        ? 't.'.self::quoteId($sortBy)." {$safeDir}"
                         : 'fts.rank';
                     $sql = "SELECT t.* FROM {$this->ftsTable} AS fts
                             JOIN {$this->table} AS t ON t.rowid = fts.rowid
@@ -144,6 +144,7 @@ final class SqliteTableSource implements TuiTableSourceInterface
         if ([] === $tokens) {
             return '""';
         }
+
         // prefix-match every token
         return implode(' ', array_map(static fn (string $t) => $t.'*', $tokens));
     }
