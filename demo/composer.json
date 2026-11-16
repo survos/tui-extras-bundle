@@ -10,14 +10,14 @@
         "ext-pdo": "*",
         "ext-pdo_sqlite": "*",
         "survos/tui-extras-bundle": "^2.5",
-        "symfony/clock": "^8.1",
-        "symfony/config": "^8.1",
-        "symfony/console": "^8.1",
-        "symfony/dependency-injection": "^8.1",
-        "symfony/dotenv": "^8.1",
-        "symfony/finder": "^8.0",
-        "symfony/runtime": "^8.1",
-        "symfony/tui": "^8.1"
+        "symfony/clock": "^8.2",
+        "symfony/config": "^8.2",
+        "symfony/console": "^8.2",
+        "symfony/dependency-injection": "^8.2",
+        "symfony/dotenv": "^8.2",
+        "symfony/finder": "^8.2",
+        "symfony/runtime": "^8.2",
+        "symfony/tui": "^8.2"
     },
     "config": {
         "allow-plugins": {
@@ -35,7 +35,7 @@
     "extra": {
         "symfony": {
             "allow-contrib": false,
-            "require": "^8.1"
+            "require": "^8.2"
         }
     },
     "repositories": [
